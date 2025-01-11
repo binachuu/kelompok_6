@@ -5,6 +5,9 @@
 #include <GL/glut.h>
 #include <GL/freeglut.h>
 #include <math.h>
+
+#define M_PI 3.14159265358979323846
+
 using namespace std;
 struct Movement
 {
@@ -21,7 +24,7 @@ float rotate = 0.0;
 
 // Parameter Scene 2 (Lingkaran)
 const int num_points = 8;      // Jumlah titik pada lingkaran
-const float radius = 2.0f;     // Radius lingkaran
+const float radius = 1.5f;     // Radius lingkaran
 const float omega = 2.0f;      // Kecepatan rotasi
 const float glow_speed = 4.0f; // Kecepatan glow
 
@@ -37,6 +40,7 @@ void createMenu();
 void carte();
 void update(int value);
 void processMenu(int option);
+void reshape(int w, int h);
 void drawConnectingLines(float time, float x_offset);
 void drawPoint(float x, float y, float intensity);
 void drawText(float x, float y, const std::string &text, void *font, float r, float g, float b);
@@ -47,10 +51,17 @@ int main(int argc, char **argv)
 {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(1366, 768);
+
+    int width = glutGet(GLUT_WINDOW_WIDTH);
+    int height = glutGet(GLUT_WINDOW_HEIGHT);
+
+    glutInitWindowSize(width, height);
+
     glutCreateWindow("Playstation 2");
     init3D();
     glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
+    glutFullScreen();
     glutTimerFunc(1000 / 60, update, 0);
     glutMainLoop();
     return 0;
@@ -58,25 +69,25 @@ int main(int argc, char **argv)
 
 void carte()
 {
-	glColor3f(1.0, 0.0, 0.0);
-	glBegin(GL_LINES);
-	glVertex3f(-1000.0, 0.0, 0.0);
-	glVertex3f(1000.0, 0.0, 0.0);
-	
-	glColor3f(0.0, 1.0, 0.0);
-	glVertex3f(0.0, -1000.0, 0.0);
-	glVertex3f(0.0, 1000.0, 0.0);
-	
-	glColor3f(0.0, 0.0, 1.0);
-	glVertex3f(0.0, 0.0, -1000.0);
-	glVertex3f(0.0, 0.0, 1000.0);
-	glEnd();
+    glColor3f(1.0, 0.0, 0.0);
+    glBegin(GL_LINES);
+    glVertex3f(-1000.0, 0.0, 0.0);
+    glVertex3f(1000.0, 0.0, 0.0);
+
+    glColor3f(0.0, 1.0, 0.0);
+    glVertex3f(0.0, -1000.0, 0.0);
+    glVertex3f(0.0, 1000.0, 0.0);
+
+    glColor3f(0.0, 0.0, 1.0);
+    glVertex3f(0.0, 0.0, -1000.0);
+    glVertex3f(0.0, 0.0, 1000.0);
+    glEnd();
 }
 
 void kotak(float x, float y, float z, float size)
 {
-	glPushMatrix();
-	glTranslatef(x, y, z);
+    glPushMatrix();
+    glTranslatef(x, y, z);
     glRotated(-40.0, 0.0, 1.0, 0.0);
     glColor3ub(255, 255, 255);
     glScalef(1.0f, size, 1.0f);
@@ -108,7 +119,7 @@ void loadingScreen()
     /*
     -------------------------------- Cube --------------------------------
     */
-	glRotated(rotate -= 0.03, 0, 1, 0);
+    glRotated(rotate -= 0.03, 0, 1, 0);
     kotak(0, 0, 0, 5);
 
     kotak(-10, 0, 5, 10);
@@ -120,7 +131,7 @@ void loadingScreen()
     kotak(20, 0, -10, 10);
     kotak(-15, 0, -15, 10);
     kotak(15, 0, 15, 10);
-    
+
     kotak(-5, -10, 10, 10);
     kotak(5, 15, -15, 10);
     kotak(-10, -15, 5, 10);
@@ -129,19 +140,19 @@ void loadingScreen()
     kotak(-20, 20, -15, 10);
     kotak(25, -15, 10, 10);
     kotak(-25, 5, -10, 10);
-    
+
     glPushMatrix();
-    
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glTranslatef(0.0, 20.0, 0.0);
+    glTranslatef(0.0, 20.0, 0.0);
     glRotated(cube.rotate, 1.0, 1.0, 1.0);
     glColor4ub(128, 128, 128, 128);
     glutSolidCube(10.0);
 
     glDisable(GL_BLEND);
     glPopMatrix();
-    
+
     glPopMatrix();
 }
 
@@ -184,15 +195,15 @@ void display()
     gluPerspective(70.0, 1.0, 1.0, 1000.0);
     if (cameraYPos <= 90)
     {
-    	reduceYPos += 0.1;
-	}
+        reduceYPos += 0.1;
+    }
     gluLookAt(5.0, cameraYPos -= reduceYPos, 5.0, 0.0, -10.0, 0.0, 0.0, 1.0, 0.0);
     glMatrixMode(GL_MODELVIEW);
     carte();
-    if (!is2DMode && cameraYPos <= 10) 
+    if (!is2DMode && cameraYPos <= 10)
     {
-    	is2DMode = true;
-	}
+        is2DMode = true;
+    }
     if (is2DMode)
     {
         glMatrixMode(GL_PROJECTION);
@@ -294,4 +305,16 @@ void drawText(float x, float y, const std::string &text, void *font, float r, fl
     {
         glutBitmapCharacter(font, c);
     }
+}
+void reshape(int w, int h)
+{
+    if (h == 0)
+        h = 1;
+    aspectRatio = (float)w / (float)h;
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(70.0, aspectRatio, 1.0, 1000.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
