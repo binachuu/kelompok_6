@@ -13,8 +13,11 @@ struct Movement
 
 bool isMoving = true;
 bool is2DMode = false;
-float lightPos[] = {10.0f, 10.0f, 10.0f, 1.0f};
+float lightPos[] = {0.0f, 10.0f, 0.0f, 0.0f};
 float aspectRatio = 1.0f; // Menyimpan aspect ratio layar
+float cameraYPos = 100;
+float reduceYPos = 0.05;
+float rotate = 0.0;
 
 // Parameter Scene 2 (Lingkaran)
 const int num_points = 8;      // Jumlah titik pada lingkaran
@@ -48,7 +51,6 @@ int main(int argc, char **argv)
     glutCreateWindow("Playstation 2");
     init3D();
     glutDisplayFunc(display);
-    createMenu();
     glutTimerFunc(1000 / 60, update, 0);
     glutMainLoop();
     return 0;
@@ -106,8 +108,8 @@ void loadingScreen()
     /*
     -------------------------------- Cube --------------------------------
     */
-
-    kotak(0, 0, 0, 10);
+	glRotated(rotate -= 0.03, 0, 1, 0);
+    kotak(0, 0, 0, 5);
 
     kotak(-10, 0, 5, 10);
     kotak(10, 0, -5, 10);
@@ -128,20 +130,19 @@ void loadingScreen()
     kotak(25, -15, 10, 10);
     kotak(-25, 5, -10, 10);
     
-    glPopMatrix();
-    /*
-    -------------------------------- Cube --------------------------------
-    */
     glPushMatrix();
+    
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+	glTranslatef(0.0, 20.0, 0.0);
     glRotated(cube.rotate, 1.0, 1.0, 1.0);
     glColor4ub(128, 128, 128, 128);
     glutSolidCube(10.0);
 
     glDisable(GL_BLEND);
-	glPopMatrix();
+    glPopMatrix();
+    
+    glPopMatrix();
 }
 
 void object2D()
@@ -178,8 +179,20 @@ void object2D()
 void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+    gluPerspective(70.0, 1.0, 1.0, 1000.0);
+    if (cameraYPos <= 90)
+    {
+    	reduceYPos += 0.1;
+	}
+    gluLookAt(5.0, cameraYPos -= reduceYPos, 5.0, 0.0, -10.0, 0.0, 0.0, 1.0, 0.0);
+    glMatrixMode(GL_MODELVIEW);
     carte();
+    if (!is2DMode && cameraYPos <= 10) 
+    {
+    	is2DMode = true;
+	}
     if (is2DMode)
     {
         glMatrixMode(GL_PROJECTION);
@@ -217,12 +230,6 @@ void init3D()
 
     /*-------------------------------- ViewPort --------------------------------*/
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(70.0, 1.0, 1.0, 100.0);
-    gluLookAt(5.0, 70.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-    glMatrixMode(GL_MODELVIEW);
-
     glClearColor(0.1, 0.1, 0.1, 1.0);
 }
 
@@ -239,14 +246,6 @@ void processMenu(int option)
         break;
     }
     glutPostRedisplay();
-}
-
-void createMenu()
-{
-    glutCreateMenu(processMenu);
-    glutAddMenuEntry("Loading Screen", 1);
-    glutAddMenuEntry("Browser", 2);
-    glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
 void update(int value)
