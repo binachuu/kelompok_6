@@ -1,0 +1,30 @@
+#include <GL/glut.h>
+
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Bersihkan layar dan depth buffer
+
+    glPushMatrix();
+        glColor3f(1.0f, 1.0f, 1.0f); // Warna putih
+        glScalef(1.0f, 10.0f, 1.0f); // Skala: x = 1, y = 10, z = 1
+        glutSolidCube(1.0); // Buat kubus dengan ukuran dasar 1.0
+    glPopMatrix();
+
+    glutSwapBuffers(); // Tampilkan hasil rendering
+}
+
+void init() {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Latar belakang hitam
+    glEnable(GL_DEPTH_TEST); // Aktifkan depth test untuk tampilan 3D
+}
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH); // Mode tampilan
+    glutInitWindowSize(800, 600); // Ukuran jendela
+    glutCreateWindow("Solid Cube Scaled"); // Judul jendela
+
+    init();
+    glutDisplayFunc(display); // Daftarkan fungsi display
+    glutMainLoop(); // Masuk ke loop utama
+    return 0;
+}
